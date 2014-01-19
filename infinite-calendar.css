@@ -1,0 +1,7 @@
+.cal-header div { display: inline-block; font-weight: bold; width: 14.28%; text-align: center;}
+.cal-scroll { border-top: 3px solid black; }
+.cal-w { width: 100%; border-bottom: 1px solid black; }
+.cal-d { display: inline-block; width: 14.28%; text-align: center; padding: 5px 0; }
+.cal-months { width: 100px; }
+.cal-m { border-top: 1px solid black; width: 100%; margin-top: -1px; }
+
