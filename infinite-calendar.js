@@ -25,6 +25,8 @@
 		this.monthNames = options.monthNames ||
 			'January February March April May June July August September October November December'.split(/ /);
 
+		this.extraRows = 'extraRows' in options? options.extraRows: 3;
+
 		this.init();
 	}
 
@@ -87,9 +89,9 @@
 
 	Calendar.prototype.computeRows = function computeRows() {
 		var top = this.scroll.scrollTop();
-		var first = Math.max(0, Math.floor(top / this.rowHeight), 0);
+		var first = Math.max(0, Math.floor(top / this.rowHeight) - this.extraRows);
 		var height = this.element.innerHeight();
-		var last = Math.ceil((top + height) / this.rowHeight);
+		var last = Math.floor((top + height - this.rowHeight) / this.rowHeight) + this.extraRows;
 
 		//console.log('visible rows: ' + first + '-' + last);
 
