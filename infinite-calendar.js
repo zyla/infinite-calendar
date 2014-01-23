@@ -1,14 +1,17 @@
 (function() {
-	Date.prototype.addDays = function(days) {
-		if(days == 0) return this;
-		return new Date(this.getFullYear(), this.getMonth(), this.getDate()+days);
+	/**
+	 * Return a new Date object, which is original 'date' plus 'days' days.
+	 */
+	function addDays(date, days) {
+		if(days == 0) return date;
+		return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 	};
 
 	function findMonday(date) {
 		var day = date.getDay();
 		if(day == 0)
 			day = 7;
-		return date.addDays(-day + 1);
+		return addDays(date, -day + 1);
 	}
 
 	var MILLISECONDS_PER_WEEK = 1000 * 60 * 60 * 24 * 7;
@@ -19,7 +22,7 @@
 		options = options || {};
 
 		this.startDate = findMonday(options.startDate || new Date(1971, 1, 1));
-		this.endDate = findMonday(options.endDate || this.startDate.addDays(365));
+		this.endDate = findMonday(options.endDate || addDays(this.startDate, 365));
 
 		this.weekdayNames = options.weekdayNames || 'Mon Tue Wed Thu Fri Sat Sun'.split(/ /);
 		this.monthNames = options.monthNames ||
@@ -134,7 +137,7 @@
 			'top': (index * this.rowHeight) + 'px',
 		});
 
-		var date = this.startDate.addDays(index * 7);
+		var date = addDays(this.startDate, index * 7);
 		if(date.getDate() <= 7) {
 			var month = $('<div class="cal-m">')
 				.html(this.monthNames[date.getMonth()] + '<br>' + date.getFullYear())
@@ -148,7 +151,7 @@
 		}
 		for(var i = 0; i < 7; i++) {
 			var day = $('<div class="cal-d">').text(date.getDate()).appendTo(row);
-			date = date.addDays(1);
+			date = addDays(date, 1);
 		}
 		return row;
 	};
