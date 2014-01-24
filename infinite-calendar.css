@@ -2,7 +2,7 @@
 .cal-scroll { border-top: 3px solid black; }
 .cal-w { width: 100%; }
 .cal-months { width: 100px; }
-.cal-m { border-top: 1px solid lightgray; margin-top: -1px; width: 100%; }
+.cal-m { border-top: 1px solid lightgray; margin-top: -1px; width: 100%; padding: 3px 5px; }
 .cal-d { display: inline-block; width: 14.28%; text-align: center; padding: 5px 0; }
 .cal-d-firstweek { border-top: 1px solid lightgray; margin-top: -1px; }
 .cal-d-first { border-left: 1px solid lightgray; margin-left: -1px; }
