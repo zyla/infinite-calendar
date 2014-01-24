@@ -153,6 +153,21 @@
 		}
 		for(var i = 0; i < 7; i++) {
 			var day = $('<div class="cal-d">').text(date.getDate()).appendTo(row);
+
+			if(date.getDate() <= 7) {
+				// The day above us belongs to another month
+				day.addClass('cal-d-firstweek');
+			}
+
+			if(i != 0 && date.getDate() == 1) {
+				// this row crosses months, and this is the border day
+				day.addClass('cal-d-first');
+			}
+
+			if((date.getMonth() % 2) != 0) {
+				day.addClass('cal-d-odd-month');
+			}
+
 			date = addDays(date, 1);
 		}
 		return row;
