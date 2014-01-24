@@ -7,3 +7,6 @@
 .cal-d-firstweek { border-top: 1px solid lightgray; margin-top: -1px; }
 .cal-d-first { border-left: 1px solid lightgray; margin-left: -1px; }
 .cal-d-odd-month { background: #f5f5f5; }
+
+.cal-d:first-child { border-left: 1px solid lightgray; }
+.cal-d:last-child { margin-right: -2px; }
