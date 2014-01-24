@@ -7,13 +7,6 @@
 		return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 	};
 
-	function findMonday(date) {
-		var day = date.getDay();
-		if(day == 0)
-			day = 7;
-		return addDays(date, -day + 1);
-	}
-
 	var MILLISECONDS_PER_WEEK = 1000 * 60 * 60 * 24 * 7;
 
 	function Calendar(element, options) {
@@ -21,10 +14,12 @@
 
 		options = options || {};
 
-		this.startDate = findMonday(options.startDate || new Date(1971, 1, 1));
-		this.endDate = findMonday(options.endDate || addDays(this.startDate, 365));
+		this.weekStart = ('weekStart' in options)? options.weekStart: 1;
 
-		this.weekdayNames = options.weekdayNames || 'Mon Tue Wed Thu Fri Sat Sun'.split(/ /);
+		this.startDate = this.findWeekStart(options.startDate || new Date(1971, 1, 1));
+		this.endDate = this.findWeekStart(options.endDate || addDays(this.startDate, 365));
+
+		this.weekdayNames = options.weekdayNames || 'Sun Mon Tue Wed Thu Fri Sat'.split(/ /);
 		this.monthNames = options.monthNames ||
 			'January February March April May June July August September October November December'.split(/ /);
 
@@ -37,7 +32,7 @@
 		this.header = $('<div class="cal-header"></div>');
 
 		for(var i = 0; i < 7; i++)
-			$('<div>').text(this.weekdayNames[i]).appendTo(this.header);
+			$('<div>').text(this.weekdayNames[(i + this.weekStart) % 7]).appendTo(this.header);
 
 		this.scroll = $('<div class="cal-scroll">');
 		this.scroll.css({
@@ -130,6 +125,13 @@
 		}
 	};
 
+	Calendar.prototype.findWeekStart = function findWeekStart(date) {
+		var day = date.getDay();
+		if(day == 0 && this.weekStart > 0)
+			day = 7;
+		return addDays(date, -day + this.weekStart);
+	}
+
 	Calendar.prototype.createRow = function createRow(index) {
 		var row = $('<div class="cal-w">');
 		row.css({
@@ -174,7 +176,7 @@
 	};
 
 	Calendar.prototype.rowForDate = function rowForDate(date) {
-		date = findMonday(date);
+		date = this.findWeekStart(date);
 		return (date.getTime() - this.startDate.getTime()) / MILLISECONDS_PER_WEEK;
 	};
 
