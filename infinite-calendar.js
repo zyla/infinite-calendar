@@ -44,7 +44,7 @@
 			calendar.selection.anchor = $(this).data('index');
 			calendar.selection.mousedown = true;
 
-			calendar._setSel(calendar.selection.anchor);
+			calendar._setSel(undefined);
 		};
 		$(window).mouseup(function() {
 			calendar.selection.mousedown = false;
