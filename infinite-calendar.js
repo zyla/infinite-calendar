@@ -41,7 +41,7 @@
 		var calendar = this;
 		calendar.selection = {};
 		this.onDayMousedown = function() {
-			calendar.selection.anchor = $(this).data('date');
+			calendar.selection.anchor = $(this).data('index');
 			calendar.selection.mousedown = true;
 
 			calendar._setSel(calendar.selection.anchor);
@@ -51,7 +51,7 @@
 		});
 		this.onDayMousemove = function() {
 			if(calendar.selection.mousedown) {
-				calendar._setSel(calendar.selection.anchor, $(this).data('date'));
+				calendar._setSel(calendar.selection.anchor, $(this).data('index'));
 			}
 		};
 	};
@@ -74,26 +74,23 @@
 			this._clearSel();
 			this._markSel(start, end, true);
 		} else {
-			this._markSel(this.selection.start, addDays(start, -1), false);
-			this._markSel(addDays(end, 1), this.selection.end, false);
+			this._markSel(this.selection.start, start - 1, false);
+			this._markSel(end + 1, this.selection.end, false);
 
 			this._markSel(start, this.selection.start, true);
 			this._markSel(this.selection.end, end, true);
 		}
 		this.selection.start = start;
 		this.selection.end = end;
-
-		console.log('sel: ' + start + ' - ' + end);
 	};
 
 	Calendar.prototype._clearSel = function() {
 		this.container.find('.selected').removeClass('selected');
 	};
 	
-	Calendar.prototype._visibleDayForDate = function(date) {
-		var days = Math.floor((date.getTime() - this.startDate.getTime()) / MILLISECONDS_PER_DAY);
-		var row = Math.floor(days / 7) - this.firstRow;
-		var dayOffset = days % 7;
+	Calendar.prototype._visibleDayForIndex = function(index) {
+		var row = Math.floor(index / 7) - this.firstRow;
+		var dayOffset = index % 7;
 
 		if(row < 0) {
 			// we are behind visible range
@@ -101,19 +98,14 @@
 		}
 		var day = this.container.children().eq(row).children().eq(dayOffset);
 
-		if(day.data('date') != date) {
-			console.log('WTF ' + day.data('date') + ' != ' + date);
-		}
-			console.log('dayOff = ' + dayOffset);
-
 		return day;
 	}
 
 	Calendar.prototype._markSel = function(start, end, selected) {
 		if(end < start)
 			return;
-		var day = this._visibleDayForDate(start);
-		while(day.data('date') <= end) {
+		var day = this._visibleDayForIndex(start);
+		while(day.data('index') <= end) {
 			day.toggleClass('selected', selected);
 
 			var next = day.next();
@@ -233,20 +225,21 @@
 		return addDays(date, -day + this.weekStart);
 	}
 
-	Calendar.prototype.createRow = function createRow(index) {
+	Calendar.prototype.createRow = function createRow(rowIndex) {
 		var row = $('<div class="cal-w">');
 		row.css({
 			'position': 'absolute',
-			'top': (index * this.rowHeight) + 'px',
+			'top': (rowIndex * this.rowHeight) + 'px',
 		});
 
-		var date = addDays(this.startDate, index * 7);
+		var index = rowIndex * 7;
+		var date = this._dateForIndex(index);
 		if(date.getDate() <= 7) {
 			var month = $('<div class="cal-m">')
 				.html(this.monthNames[date.getMonth()] + '<br>' + date.getFullYear())
 				.css({
 					'position': 'absolute',
-					'top': (index * this.rowHeight) + 'px'
+					'top': (rowIndex * this.rowHeight) + 'px'
 				});
 			month.appendTo(this.months);
 
@@ -270,18 +263,20 @@
 			}
 
 			day.data('date', date);
+			day.data('index', index);
 
 			if(this.selectable) {
 				day.mousedown(this.onDayMousedown);
 				day.mousemove(this.onDayMousemove);
 				day.mouseup(this.onDayMouseup);
 
-				if(date >= this.selection.start && date <= this.selection.end) {
+				if(index >= this.selection.start && index <= this.selection.end) {
 					day.addClass('selected');
 				}
 			}
 
 			date = addDays(date, 1);
+			index++;
 		}
 		return row;
 	};
@@ -306,6 +301,14 @@
 	Calendar.prototype.rowForDate = function rowForDate(date) {
 		date = this.findWeekStart(date);
 		return (date.getTime() - this.startDate.getTime()) / MILLISECONDS_PER_WEEK;
+	};
+
+	Calendar.prototype._indexForDate = function _indexForDate(date) {
+		return Math.floor((date.getTime() - this.startDate.getTime()) / MILLISECONDS_PER_DAY);
+	};
+	
+	Calendar.prototype._dateForIndex = function _dateForIndex(index) {
+		return addDays(this.startDate, index);
 	};
 
 	Calendar.prototype.scrollToRow = function scrollToRow(row) {
