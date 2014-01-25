@@ -10,10 +10,14 @@
 		$(function() {
 			var startDate = new Date();
 			startDate.setDate(1);
-			$('#cal').infiniteCalendar({
+			var cal = $('#cal').infiniteCalendar({
 				startDate: startDate,
 				extraRows: 2
 			});
+			$('#cal').on('selectionChange', function(e, start, end) {
+				$('#info').text('Selection: ' + start + ' - ' + end);
+			});
+			cal.select(new Date());
 		});
 	</script>
 	<style type="text/css" media="screen">
@@ -27,7 +31,7 @@
 </head>
 <body>
 	<div id="cal">
-		
 	</div>
+	<div id="info"></div>
 </body>
 </html>

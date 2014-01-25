@@ -82,6 +82,25 @@
 		}
 		this.selection.start = start;
 		this.selection.end = end;
+
+		this.element.trigger('selectionChange', [ this._dateForIndex(start), this._dateForIndex(end) ]);
+	};
+
+	Calendar.prototype.select = function select(start, end) {
+		this._setSel(this._indexForDate(start), this._indexForDate(end));
+	};
+
+	Calendar.prototype.selectionStart = function() {
+		return this._dateForIndex(this.selection.start);
+	};
+	Calendar.prototype.selectionEnd = function() {
+		return this._dateForIndex(this.selection.end);
+	};
+	Calendar.prototype.selection = function() {
+		return {
+			start: this.selectionStart(),
+			end: this.selectionEnd()
+		};
 	};
 
 	Calendar.prototype._clearSel = function() {
@@ -304,10 +323,12 @@
 	};
 
 	Calendar.prototype._indexForDate = function _indexForDate(date) {
+		if(date === undefined) return undefined;
 		return Math.floor((date.getTime() - this.startDate.getTime()) / MILLISECONDS_PER_DAY);
 	};
 	
 	Calendar.prototype._dateForIndex = function _dateForIndex(index) {
+		if(index === undefined) return undefined;
 		return addDays(this.startDate, index);
 	};
 
