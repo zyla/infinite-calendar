@@ -10,3 +10,5 @@
 
 .cal-d:first-child { border-left: 1px solid lightgray; }
 .cal-d:last-child { margin-right: -2px; }
+
+.cal-d.selected { background: #328efe; color: white; }

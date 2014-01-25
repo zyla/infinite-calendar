@@ -7,7 +7,8 @@
 		return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 	};
 
-	var MILLISECONDS_PER_WEEK = 1000 * 60 * 60 * 24 * 7;
+	var MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+	var MILLISECONDS_PER_WEEK = MILLISECONDS_PER_DAY * 7;
 
 	function Calendar(element, options) {
 		this.element = $(element);
@@ -25,8 +26,105 @@
 
 		this.extraRows = 'extraRows' in options? options.extraRows: 3;
 
+		this.selectable = 'selectable' in options? options.selectable: true;
+
+		if(this.selectable) {
+			this._initSel();
+		}
+
 		this.init();
 	}
+
+	Calendar.prototype._initSel = function() {
+		// in the following functions, 'this' will be .cal-d element.
+		// grab Calendar object in closure
+		var calendar = this;
+		calendar.selection = {};
+		this.onDayMousedown = function() {
+			calendar.selection.anchor = $(this).data('date');
+			calendar.selection.mousedown = true;
+
+			calendar._setSel(calendar.selection.anchor);
+		};
+		$(window).mouseup(function() {
+			calendar.selection.mousedown = false;
+		});
+		this.onDayMousemove = function() {
+			if(calendar.selection.mousedown) {
+				calendar._setSel(calendar.selection.anchor, $(this).data('date'));
+			}
+		};
+	};
+
+	Calendar.prototype._setSel = function(start, end) {
+		if(end === undefined)
+			end = start;
+
+		if(start > end) {
+			var tmp = start; start = end; end = tmp;
+		}
+
+		if(this.selection.start == start && this.selection.end == end)
+			return;
+
+		if(start === undefined) {
+			this._clearSel();
+		} else if(this.selection.start === undefined
+				|| this.selection.end < start || this.selection.start > end) {
+			this._clearSel();
+			this._markSel(start, end, true);
+		} else {
+			this._markSel(this.selection.start, addDays(start, -1), false);
+			this._markSel(addDays(end, 1), this.selection.end, false);
+
+			this._markSel(start, this.selection.start, true);
+			this._markSel(this.selection.end, end, true);
+		}
+		this.selection.start = start;
+		this.selection.end = end;
+
+		console.log('sel: ' + start + ' - ' + end);
+	};
+
+	Calendar.prototype._clearSel = function() {
+		this.container.find('.selected').removeClass('selected');
+	};
+	
+	Calendar.prototype._visibleDayForDate = function(date) {
+		var days = Math.floor((date.getTime() - this.startDate.getTime()) / MILLISECONDS_PER_DAY);
+		var row = Math.floor(days / 7) - this.firstRow;
+		var dayOffset = days % 7;
+
+		if(row < 0) {
+			// we are behind visible range
+			row = dayOffset = 0;
+		}
+		var day = this.container.children().eq(row).children().eq(dayOffset);
+
+		if(day.data('date') != date) {
+			console.log('WTF ' + day.data('date') + ' != ' + date);
+		}
+			console.log('dayOff = ' + dayOffset);
+
+		return day;
+	}
+
+	Calendar.prototype._markSel = function(start, end, selected) {
+		if(end < start)
+			return;
+		var day = this._visibleDayForDate(start);
+		while(day.data('date') <= end) {
+			day.toggleClass('selected', selected);
+
+			var next = day.next();
+			if(!next.length) {
+				next = day.parent().next().children().first();
+				if(!next.length)
+					break;
+			}
+			day = next;
+		}
+	};
 
 	Calendar.prototype.init = function init() {
 		this.header = $('<div class="cal-header"></div>');
@@ -79,6 +177,9 @@
 		var numRows = this.rowForDate(this.endDate) + 1;
 		this.container.height(numRows * this.rowHeight);
 		this.months.height(this.container.height());
+
+		if(this.selectable)
+			this.element.css('user-select', 'none');
 
 		// TODO smarter resizes?
 		$(window).on('resize', $.proxy(this.onResize, this));
@@ -166,6 +267,18 @@
 
 			if((date.getMonth() % 2) != 0) {
 				day.addClass('cal-d-odd-month');
+			}
+
+			day.data('date', date);
+
+			if(this.selectable) {
+				day.mousedown(this.onDayMousedown);
+				day.mousemove(this.onDayMousemove);
+				day.mouseup(this.onDayMouseup);
+
+				if(date >= this.selection.start && date <= this.selection.end) {
+					day.addClass('selected');
+				}
 			}
 
 			date = addDays(date, 1);
