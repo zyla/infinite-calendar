@@ -1,0 +1,44 @@
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+	<title>Calendar data test</title>
+	<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+	<script src="../infinite-calendar.js"></script>
+	<link rel="stylesheet" href="../infinite-calendar.css" type="text/css">
+	<script>
+		$(function() {
+			var startDate = new Date();
+			startDate.setDate(1);
+
+			var data = {
+				'2014-02-14': { classes: [ 'red' ] },
+				'2014-02-01': { classes: [ 'green' ] },
+				'2014-02-22': { classes: [ 'red', 'green' ] },
+				'2014-03-08': { classes: [ 'red' ] },
+			};
+
+			$('#cal').infiniteCalendar({
+				startDate: startDate,
+				extraRows: 2,
+				dataSource: data
+			});
+		});
+	</script>
+	<style type="text/css" media="screen">
+	#cal {
+		width: 400px;
+		height: 250px;
+		border: 1px solid black;
+		overflow: hidden;
+	}
+	.red { color: red; font-weight: bold; }
+	.green { color: green; font-weight: bold; }
+	.red.green { color: #ffff00; }
+	</style>
+</head>
+<body>
+	<div id="cal">
+	</div>
+</body>
+</html>

@@ -138,7 +138,7 @@
 			return;
 		var day = this._visibleDayForIndex(start);
 		while(day.data('index') <= end) {
-			block(day);
+			block.call(this, day);
 
 			var next = day.next();
 			if(!next.length) {
@@ -216,7 +216,7 @@
 		var height = this.element.innerHeight();
 		var last = Math.floor((top + height - this.rowHeight) / this.rowHeight) + this.extraRows;
 
-		//console.log('visible rows: ' + first + '-' + last);
+		var oldFirst = this.firstRow, oldLast = this.lastRow;
 
 		// first call, or non-intersecting ranges
 		if(this.firstRow === undefined || this.lastRow < first || this.firstRow > last) {
@@ -248,6 +248,63 @@
 				this.lastRow--;
 			}
 		}
+
+		if(oldFirst !== first || oldLast !== last) {
+			this._visibleRangeChanged(oldFirst, oldLast, first, last);
+		}
+	};
+
+
+	Calendar.prototype._visibleRangeChanged = function(oldFirst, oldLast, first, last) {
+		if(oldFirst === undefined) {
+			this._fetchData(first, last);
+			return;
+		}
+
+		if(first < oldFirst) {
+			this._fetchData(first, oldFirst - 1);
+		}
+		if(last > oldLast) {
+			this._fetchData(oldLast + 1, last);
+		}
+	};
+
+	/**
+	 * Query dataSource for data in inclusive range (first, last) weeks (rows).
+	 */
+	Calendar.prototype._fetchData = function(first, last) {
+		var startIndex = first * 7,
+			endIndex = last * 7 + 6;
+
+		var __this = this;
+
+		function processData(data) {
+			__this._iterate(startIndex, endIndex, function(day) {
+				var key = this.formatDate(day.data('date'));
+				if(data[key]) {
+					day.addClass(data[key].classes.join(' '));
+				}
+			});
+		}
+
+		if(typeof this.dataSource == 'function') {
+			this.dataSource(
+				this._dateForIndex(startIndex),
+				this._dateForIndex(endIndex),
+				processData
+			);
+		} else if(this.dataSource) {
+			processData(this.dataSource);
+		}
+	};
+
+	Calendar.prototype.formatDate = function(date) {
+		var month = date.getMonth() + 1, day = date.getDate();
+		if(month < 10)
+			month = '0' + month;
+		if(day < 10)
+			day = '0' + day;
+		return date.getFullYear() + '-' + month + '-' + day;
 	};
 
 	Calendar.prototype.findWeekStart = function findWeekStart(date) {
