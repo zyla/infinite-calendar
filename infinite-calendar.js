@@ -28,6 +28,8 @@
 
 		this.selectable = 'selectable' in options? options.selectable: true;
 
+		this.dataSource = options.dataSource || function(start, end, cb) { cb({}); };
+
 		if(this.selectable) {
 			this._initSel();
 		}
@@ -121,11 +123,22 @@
 	}
 
 	Calendar.prototype._markSel = function(start, end, selected) {
+		this._iterate(start, end, function(day) {
+			day.toggleClass('selected', selected);
+		});
+	};
+		
+	/**
+	 * Walk through visible days in range (start, end), inclusive.
+	 * For each day, invoke block(day).
+	 * FP is awesome.
+	 */
+	Calendar.prototype._iterate = function(start, end, block) {
 		if(end < start)
 			return;
 		var day = this._visibleDayForIndex(start);
 		while(day.data('index') <= end) {
-			day.toggleClass('selected', selected);
+			block(day);
 
 			var next = day.next();
 			if(!next.length) {
